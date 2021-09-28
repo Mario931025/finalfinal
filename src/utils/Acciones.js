@@ -34,3 +34,40 @@ export const validarPhone = () => {
 
     })
 }
+
+
+export const enviarConfimacion = async (numero,recapcha) => {
+
+    let verificationid = "";
+
+    await firebase
+    .auth()
+    .currentUser.reauthenticateWithPhoneNumber(numero,recapcha.current)
+    .then((response)=> {
+        verificationid = response.verificationId
+    })
+    .catch((err)=>{
+     console.log(` hay un error: ${err} `)
+    })
+
+    return verificationid
+
+}
+
+export const confirmarcodigo = async(verificationid,codigo)=> {
+
+    let resultado = "";
+
+    const credenciales = firebase.auth.PhoneAuthProvider.credential(verificationid,codigo)
+
+    await firebase
+    .auth()
+    .currentUser
+    .linkWithCredential(credenciales)
+    .then((response => resultado = true ))
+    .catch(err => console.log(err))
+
+    return resultado;
+
+
+}
