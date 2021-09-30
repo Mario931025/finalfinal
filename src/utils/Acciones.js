@@ -71,3 +71,23 @@ export const confirmarcodigo = async(verificationid,codigo)=> {
 
 
 }
+
+
+export const enviarAutentificacionphone = async (numero,recapcha)=> {
+
+    let verificationid = "";
+
+   await firebase
+        .auth()
+        .currentUser.reauthenticateWithPhoneNumber(numero,recapcha.current)
+        .then((response) => {
+            verificationid = response.verificationId
+        })
+        .catch((err) => {
+            console.log(`Tenemos error en la
+            verificaicon del numero ${err}
+            `)
+        })
+
+        return verificationid
+}
