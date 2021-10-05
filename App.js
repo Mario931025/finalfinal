@@ -9,7 +9,7 @@ import { validarsesion,cerrarsesion } from './src/utils/Acciones';
 
 export default function App() {
 
- // cerrarsesion()
+  //cerrarsesion()
 
   const [user, setuser] = useState(false)
   const [loading, setloading] = useState(false)

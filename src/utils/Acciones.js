@@ -2,6 +2,14 @@
 
 import { firebaseapp } from "./Firebase";
 import * as firebase from 'firebase';
+import Constants from "expo-constants";
+import { Platform } from "react-native";
+import * as Notifications from "expo-notifications";
+import * as Permissions from "expo-permissions";
+import 'firebase/firestore';
+
+
+const db = firebase.firestore(firebaseapp);
 
 export const validarsesion = (setvalidarsesion) =>{
 
@@ -90,4 +98,62 @@ export const enviarAutentificacionphone = async (numero,recapcha)=> {
         })
 
         return verificationid
+}
+
+export const obtenerToken = async () => {
+    let token = "";
+    if (Constants.isDevice) {
+      const { status: existingStatus } = await Permissions.getAsync(
+        Permissions.NOTIFICATIONS
+      );
+      let finalStatus = existingStatus;
+      if (existingStatus !== "granted") {
+        const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+        finalStatus = status;
+      }
+      if (finalStatus !== "granted") {
+        alert("Failed to get push token for push notification!");
+        return;
+      }
+      //aqui asigna el valor al token 
+      token = (await Notifications.getExpoPushTokenAsync()).data;
+    } else {
+      alert("Must use physical device for Push Notifications");
+    }
+  
+    if (Platform.OS === "android") {
+      Notifications.setNotificationChannelAsync("default", {
+        name: "default",
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: "#FF231F7C",
+      });
+    }
+    return token;
+  };
+
+
+export const ObtenerUsuario = () => {
+    return firebase.auth().currentUser;
+}
+
+
+export const addRegistroEspecifico = async (coleccion,doc,data) => {
+    const resultado = { error: "", statusresponse : false, data: null}
+
+    await  db
+    .collection(coleccion)
+    .doc(doc)
+    .set(data)
+
+    .then((response) => {
+        resultado.statusresponse = true
+    })
+    .catch((err)=> {
+        resultado.error = err;
+        console.log(err)
+    })
+
+    return resultado;
+
 }
