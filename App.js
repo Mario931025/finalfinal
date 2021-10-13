@@ -6,6 +6,16 @@ import RutasNoAutenticadas from './src/navegacion/RutasNoAutenticadas'
 import SwitchNavigator from './src/navegacion/SwitchNavigator'
 import Loading from './src/componentes/Loading';
 import { validarsesion,cerrarsesion } from './src/utils/Acciones';
+import {encode,decode} from 'base-64'
+
+if(!global.btoa){
+  global.btoa = encode;
+}
+
+if(!global.atob){
+  global.atob = decode;
+}
+
 
 export default function App() {
 

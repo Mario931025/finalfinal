@@ -18,7 +18,15 @@ export default function ConfirmarNumero(props) {
     const [loading, setloading] = useState(false);
 
     const confirmarCodigoSMS = async (code) => {
+
       setloading(true)
+      const token = await obtenerToken()
+
+     // console.log(await obtenerToken())
+
+     // console.log(ObtenerUsuario())
+
+     
 
       //verifica que el codido del sms que llega es el correcto
       const resultado = await confirmarcodigo(verificationid,code)
@@ -43,7 +51,7 @@ export default function ConfirmarNumero(props) {
       }else{
         Alert.alert(
           "Error",
-          "Favor validar el código introducio",[{
+          "Favor validar el código introducido",[{
             style:"default",
             text: "Entendido"
           }]

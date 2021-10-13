@@ -1,12 +1,13 @@
 import firebase from 'firebase/app'
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCmyJhedg8JzQrqgQEAiVvLS-fEt3VW_wY",
-    authDomain: "fesappprueba.firebaseapp.com",
-    projectId: "fesappprueba",
-    storageBucket: "fesappprueba.appspot.com",
-    messagingSenderId: "598434285824",
-    appId: "1:598434285824:web:27fef493e160d18b82cbe5"
+  apiKey: "AIzaSyBum-rqpDfzfb6uYofSP2GCoyOr46T-w4k",
+  authDomain: "bunkan-app-8d29e.firebaseapp.com",
+  projectId: "bunkan-app-8d29e",
+  storageBucket: "bunkan-app-8d29e.appspot.com",
+  messagingSenderId: "891363942478",
+  appId: "1:891363942478:web:fe675089ff8b010f22631f",
+  measurementId: "G-G4W7R4BK4X"
   };
 
 

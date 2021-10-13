@@ -8,6 +8,15 @@ import * as Notifications from "expo-notifications";
 import * as Permissions from "expo-permissions";
 import 'firebase/firestore';
 
+/// codigo para manejar las notificaciones y personalizarlas
+Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge:true
+    })
+})
+
 
 const db = firebase.firestore(firebaseapp);
 
@@ -32,14 +41,13 @@ export const cerrarsesion = () => {
     console.log("Has cerrado sesión")
 }
 
-export const validarPhone = () => {
+export const validarPhone = (setphoneauth) => {
 
-    firebase.auth().onAuthStateChanged((user) => {
-
-        if(user.phoneNumber){
-            setphoneauth(true)
-        }
-
+    db.collection("Usuarios") //solo aplica cuando el usuario mete # correctamente
+    .doc(ObtenerUsuario().uid)
+    .onSnapshot( snapshot => {
+        //que que ocupamos si la ruta existe o no
+        setphoneauth(snapshot.exists)
     })
 }
 
