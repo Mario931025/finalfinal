@@ -7,6 +7,11 @@ import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import * as Permissions from "expo-permissions";
 import 'firebase/firestore';
+import uuid from 'random-uuid-v4'
+//permite hacer una iteracion de cada imagen
+import {map, result} from 'lodash'
+//para que se conecta la BD
+import { convertirFicheroBlob} from './ValidarEmail'
 
 /// codigo para manejar las notificaciones y personalizarlas
 Notifications.setNotificationHandler({
@@ -164,4 +169,51 @@ export const addRegistroEspecifico = async (coleccion,doc,data) => {
 
     return resultado;
 
+}
+
+//funcion que sube la imagen al storage de firebase
+//va arecibir un array de imagenes, y la ruta de la imagen 
+//vamos a gurdar esas fotos en un folder en firebase que se llame fotos de perfil
+
+export const subirImagenesBatch = async (imagenes, ruta) =>{
+
+    //para subir las imagenes a firebase necesiotamos subirlas en formato blob (datos inmutables)
+
+    const imagenesurl = [];
+
+
+    //para que fluya el resto de la informacion en la aplicacion,
+    //sube una imagen y continua con la ejecución
+
+    await Promise.all(
+
+        map(imagenes, async (image)=> {
+
+                //convierte la imagen en forma blob
+                const blob = await convertirFicheroBlob(image)
+
+                //ruta para guardar la imagen en el storage en un lugar unico
+                const ref = firebase.storage().ref(ruta).child(uuid())
+
+                //sube la imagen a firebase
+                //y obtenemos la ruta y el nombre del uuid unico
+
+                await ref.put(blob)
+
+                
+                .then(async(result) => {
+                    await firebase.storage()
+                    .ref(`${ruta}/${result.metadata.name}`)
+                    .getDownloadURL() //metodo que obtiene url de firebase y la pone en la ruta unica en el array
+
+                    
+                    .then((imagenurl) =>{
+                        imagenesurl.push(imagenurl)
+                        console.log(imagenurl)
+                    })
+                })
+        })
+
+    )
+    return imagenesurl
 }
