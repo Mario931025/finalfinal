@@ -150,6 +150,11 @@ export const ObtenerUsuario = () => {
     return firebase.auth().currentUser;
 }
 
+//metodo que agrega registro a la BD
+//recibe el nombre de la coleccion, documento, y los datos
+
+// merge de colocar los nuevos datos en firesote en un dcoumento.
+
 
 export const addRegistroEspecifico = async (coleccion,doc,data) => {
     const resultado = { error: "", statusresponse : false, data: null}
@@ -157,7 +162,9 @@ export const addRegistroEspecifico = async (coleccion,doc,data) => {
     await  db
     .collection(coleccion)
     .doc(doc)
-    .set(data)
+    .set(data,{
+        merge:true
+    } )
 
     .then((response) => {
         resultado.statusresponse = true
@@ -216,4 +223,77 @@ export const subirImagenesBatch = async (imagenes, ruta) =>{
 
     )
     return imagenesurl
+}
+
+export const actualizarPerfil = async (data)=> {
+
+    let respuesta = false;
+
+   await firebase.auth()
+   .currentUser.updateProfile(data)
+
+   .then((response) => {
+       respuesta = true
+   })
+   .catch((error) =>{
+       console.log(error)
+   })
+
+   return respuesta;
+
+}
+
+/// esta funcion sirve para reutantificar y poder cambiar los datos de perfil
+
+export const reautenticar = async (verificationId,code) => {
+
+    let response = { statusresponse: false}
+
+
+    const credenciales = new firebase.auth.PhoneAuthProvider.credential(verificationId,code)
+
+    await firebase
+    .auth()
+    .currentUser.reauthenticateWithCredential(credenciales)
+    .then((resultado) => (response.statusresponse = true))
+    .catch((err) => {console.log(err)})
+
+    return response;
+}
+
+export const actualizaremailfirebase = async (email) => {
+    let response =  { statusresponse : false}
+
+    await firebase
+    .auth()
+    .currentUser.updateEmail(email)
+    .then((respuesta) => {
+        response.statusresponse = true
+    })
+    .catch((err)=> {
+        response.statusresponse = false
+        console.log(err)
+    })
+
+    return response;
+}
+
+
+export const actualizarTelefono = async (verificationId, code) => {
+
+    let response = {statusresponse : false}
+
+    const credenciales =  new firebase.auth.PhoneAuthProvider.credential(verificationId,code)
+
+    await firebase
+    .auth()
+    .currentUser.updatePhoneNumber(credenciales)
+    .then((resultado) => ( response.statusresponse = true))
+    .catch ((err) => {
+        console.log(err)
+    })
+
+    return response;
+
+
 }
