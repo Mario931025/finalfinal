@@ -1,10 +1,12 @@
 import React from 'react'
 import  {createStackNavigator} from '@react-navigation/stack'
 import Tienda from '../pantallas/tienda/Tienda'
-import AddProduct from '../pantallas/tienda/AddProduct'
+import AddProduct from '../pantallas/miTienda/AddProduct'
 import Contacto from '../pantallas/tienda/Contacto'
 import MensajesList from '../pantallas/tienda/MensajesList'
 import Detalle from '../pantallas/tienda/Detalle'
+
+
 
 //
 const Stack = createStackNavigator();

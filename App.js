@@ -1,11 +1,11 @@
 import {StatusBar} from 'expo-status-bar'
-import React,{useState,useEffect} from 'react';
+import React,{useState,useEffect,useRef} from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import RutasAutenticadas from './src/navegacion/RutasAutenticadas';
 import RutasNoAutenticadas from './src/navegacion/RutasNoAutenticadas'
 import SwitchNavigator from './src/navegacion/SwitchNavigator'
 import Loading from './src/componentes/Loading';
-import { validarsesion,cerrarsesion } from './src/utils/Acciones';
+import { validarsesion,cerrarsesion,iniciarnotificaciones } from './src/utils/Acciones';
 import {encode,decode} from 'base-64'
 
 if(!global.btoa){
@@ -23,13 +23,15 @@ export default function App() {
 
   const [user, setuser] = useState(false)
   const [loading, setloading] = useState(false)
+  const notificationListener = useRef()
+  const responseListener = useRef()
 
   useEffect(() => {
 
     setloading(true)
     validarsesion(setuser)
+   iniciarnotificaciones(notificationListener,responseListener)
     setloading(false)
-    
   }, [])
 
 

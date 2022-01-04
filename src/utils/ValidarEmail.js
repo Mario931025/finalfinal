@@ -1,5 +1,7 @@
 import * as Permissions from "expo-permissions";
 import * as ImagePicker from "expo-image-picker";
+import { Alert, Linking} from 'react-native'
+import {size} from 'lodash'
 
 
 export  function validateEmail(email) {
@@ -43,4 +45,20 @@ return blob;
 
 }
 
+// funcion que nos permite enviar mensaje a whatspp
 
+export const enviarWhatsapp = (numero,text) => {
+
+  let link = `whatsapp://send?phone=${numero.substring(1,size(numero))}&text=${text}`;
+
+  Linking.canOpenURL(link).then((supported) =>{
+
+    if(!supported){
+      Alert.alert("Favor de instalar whatsapp para enviar un mensaje al vendedor")
+    }else{
+      return Linking.openURL(link)
+    }
+
+  })
+
+}

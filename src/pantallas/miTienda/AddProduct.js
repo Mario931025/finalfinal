@@ -1,126 +1,102 @@
-import React,{useState,useRef,useEffect} from 'react'
+import React,{useState,useRef} from 'react'
 import { View, Text,StyleSheet,Alert,TouchableOpacity,ScrollView } from 'react-native'
 import { Input,Image,Button,Icon,Avatar,AirbnbRating } from 'react-native-elements'
-import { map,size,filter,isEmpty } from 'lodash'
-import { useNavigation } from '@react-navigation/native'
+import {map,size,filter,isEmpty} from'lodash';
+import { useNavigation } from '@react-navigation/native';
 import Loading from '../../componentes/Loading'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { cargarImagenesxAspecto } from '../../utils/ValidarEmail'
-import { subirImagenesBatch,actualizarRegistro,addRegistro,ObtenerUsuario,obtenerRegistroxID } from '../../utils/Acciones'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+//para cargar imganes del producto
+import { cargarImagenesxAspecto} from '../../utils/ValidarEmail'
+import {subirImagenesBatch,addRegistroEspecifico,addRegistro,ObtenerUsuario} from '../../utils/Acciones'
+export default function AddProduct() {
 
+    //guarda los valores de los campos
+    const [titulo, settitulo] = useState("")
+    const [descripcion, setdescripcion] = useState("")
+    const [precio, setprecio] = useState(0.0)
+    const [imagenes, setimagenes] = useState([])
+    const [categoria, setcategoria] = useState("")
+    const [errores, seterrores] = useState({})
+    const [rating, setrating] = useState(5)
+    const [loading, setloading] = useState(false)
+    const btnref = useRef()
+    const navigation = useNavigation()
 
-export default function EditarProducto(props) {
+    //se ba a subir a firebas el producto
+    const addProduct = async() => {
+        seterrores({})
 
-     //guarda los valores de los campos
-     const {route} = props
-     const {id} = route.params;
-     const [titulo, settitulo] = useState("")
-     const [descripcion, setdescripcion] = useState("")
-     const [precio, setprecio] = useState(0.0)
-     const [imagenes, setimagenes] = useState([])
-     const [categoria, setcategoria] = useState("")
-     const [errores, seterrores] = useState({})
-     const [rating, setrating] = useState(5)
-     const [loading, setloading] = useState(false)
-     const btnref = useRef()
-     const navigation = useNavigation()
+        if(isEmpty(titulo)) {
+            seterrores({titulo:"El campo titulo es obligatorio"})
+           
+        }else if(isEmpty(descripcion)){
+            seterrores({descripcion : "El campo descripción es obligatorio"})
 
-     //carga la info del producto y asigna acada valor su valor por ruta
-     useEffect(() => {
-       
-        (async() => {
-            const response = await obtenerRegistroxID("Productos",id)
-          //  console.log(response)
-            const {data} = response
-            settitulo(data.titulo)
-            setdescripcion(data.descripcion)
-            setprecio(data.precio)
-            setimagenes(data.imagenes)
-            setrating(data.rating)
-            setcategoria(data.categoria)
+        }else if (!parseFloat(precio) > 0) {
+            seterrores({precio : "Introduzca un precio para el producto"})
+        }else if(isEmpty(categoria)){
+            Alert.alert("Seleccione una categoria","Favor seleccione una categoria para el producto o servicio",[
+                { 
+                    style:"cancel",
+                    text:"Entendido"
+                }
+            ])
+        }else if( isEmpty(imagenes)){
+            Alert.alert("Seleccione una imagen","Favor seleccione una imagen para el producto o servicio",[
+                { 
+                    style:"cancel",
+                    text:"Entendido"
+                }
+            ])
+        }else{
+            setloading(true)
+            const urlimagenes = await subirImagenesBatch(imagenes,"ImagenesProductos")
+            
 
-        })()
-     }, [])
- 
+            const producto = {
+              titulo,
+              descripcion,
+              precio,
+              usuario: ObtenerUsuario().uid,
+              imagenes : urlimagenes,
+              status:1,
+              fechacreacion : new Date(),
+              rating,
+              categoria
+            }
 
-    // funcion del bootn editar producto
+            const registarproducto = await addRegistro("Productos", producto);
 
-        //se ba a subir a firebas el producto
-        const editProducto = async() => {
-            seterrores({})
-    
-            if(isEmpty(titulo)) {
-                seterrores({titulo:"El campo titulo es obligatorio"})
-               
-            }else if(isEmpty(descripcion)){
-                seterrores({descripcion : "El campo descripción es obligatorio"})
-    
-            }else if (!parseFloat(precio) > 0) {
-                seterrores({precio : "Introduzca un precio para el producto"})
-            }else if(isEmpty(categoria)){
-                Alert.alert("Seleccione una categoria","Favor seleccione una categoria para el producto o servicio",[
-                    { 
-                        style:"cancel",
-                        text:"Entendido"
-                    }
-                ])
-            }else if( isEmpty(imagenes)){
-                Alert.alert("Seleccione una imagen","Favor seleccione una imagen para el producto o servicio",[
-                    { 
-                        style:"cancel",
-                        text:"Entendido"
-                    }
-                ])
+     
+            if(registarproducto.statusresponse){
+               setloading(false);
+              Alert.alert(
+                "Registro Exitoso",
+                "El producto se ha registrado correctamente",
+                [
+                  {
+                    style: "cancel",
+                    text: "Aceptar",
+                    onPress: () => navigation.navigate("mitienda"),
+                  },
+                ]
+              );
             }else{
-                setloading(true)
-                const urlimagenes = await subirImagenesBatch(imagenes,"ImagenesProductos")
-                
-    
-                const producto = {
-                  titulo,
-                  descripcion,
-                  precio,
-                  usuario: ObtenerUsuario().uid,
-                  imagenes : urlimagenes,
-                  status:1,
-                  fechacreacion : new Date(),
-                  rating,
-                  categoria
-                }
-    
-                const registarproducto = await actualizarRegistro("Productos" ,id,producto)
-    
-         
-                if(registarproducto.statusresponse){
-                   setloading(false);
-                  Alert.alert(
-                    "Registro Exitoso",
-                    "El producto se ha registrado correctamente",
-                    [
-                      {
-                        style: "cancel",
-                        text: "Aceptar",
-                        onPress: () => navigation.navigate("mitienda"),
-                      },
-                    ]
-                  );
-                }else{
-                  setloading(false);
-    
-            Alert.alert(
-              "Registro Fallido",
-              "Ha ocurrido un error al registrar producto",
-              [
-                {
-                  style: "cancel",
-                  text: "Aceptar",
-                },
-              ]
-            );
-                }
+              setloading(false);
+
+        Alert.alert(
+          "Registro Fallido",
+          "Ha ocurrido un error al registrar producto",
+          [
+            {
+              style: "cancel",
+              text: "Aceptar",
+            },
+          ]
+        );
             }
         }
-
+    }
 
 
     return (
@@ -140,7 +116,6 @@ export default function EditarProducto(props) {
                 onChangeText={(text)=>settitulo(text)}
                 inputStyle={styles.input}
                 errorMessage={errores.titulo}
-                value={titulo}
             />
               
               <Input
@@ -149,7 +124,7 @@ export default function EditarProducto(props) {
                 inputStyle={styles.textarea}
                 errorMessage={errores.descripcion}
                 multiline={true}
-                value={descripcion}
+
             />
               
               <Input
@@ -158,7 +133,7 @@ export default function EditarProducto(props) {
                 inputStyle={styles.input}
                 errorMessage={errores.precio}
                 keyboardType="number-pad"
-                value={precio.toFixed(2)}
+
             />
               
             
@@ -187,7 +162,7 @@ export default function EditarProducto(props) {
             title="Agregar nuevo producto"
             buttonStyle={styles.btnaddnew}
             ref={btnref}
-            onPress={editProducto}
+            onPress={addProduct}
             />
             <Loading isVisible={loading} text="Favor espere"/>
             
@@ -323,7 +298,7 @@ function Botonera(props) {
     );
   }
 
-  
+
 const styles = StyleSheet.create({
     container:{
         flex:1,

@@ -3,6 +3,7 @@ import  {createStackNavigator} from '@react-navigation/stack'
 import MiTenda from '../pantallas/miTienda/MiTienda'
 import EditarProducto from '../pantallas/miTienda/EditarProducto'
 import { StyleSheet } from 'react-native'
+import AddProduct  from '../pantallas/miTienda/AddProduct'
 
 const Stack = createStackNavigator();
 
@@ -10,8 +11,11 @@ const Stack = createStackNavigator();
 export default function MiTiendaStack() {
     return (
       <Stack.Navigator screenOptions={{ headerStyle:{backgroundColor:"#127c7e"},headerTintColor:"#fff" }}>
+           
            <Stack.Screen  component={MiTenda} name="mitienda" options={{ title:"Mi Tienda"}} />
+           
            <Stack.Screen  component={EditarProducto} name="edit-product" options={{ title:"Editar Producto"}} />
+           <Stack.Screen component={AddProduct} name="add-product" options={{title:"Agrega Producto Nuevo" , headerStyle:{backgroundColor:"#127c7e"},headerTintColor:"#fff" }}/>
       </Stack.Navigator>
     )
 }

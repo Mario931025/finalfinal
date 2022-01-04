@@ -90,9 +90,10 @@ export default function Perfil() {
 
         switch(input) {
             case "displayName":
-                console.log( await actualizarPerfil({displayName : valor}) )
+                //console.log(  )
+                await actualizarPerfil({displayName : valor})
                 addRegistroEspecifico("Usuarios" ,usuario.uid,{ displayName : valor})
-                console.log(usuario);
+              //  console.log(usuario);
                 break;
 
             case "email" :
@@ -175,7 +176,7 @@ export default function Perfil() {
         
     }
 
-    console.log(ObtenerUsuario())
+   // console.log(ObtenerUsuario())
 
     return (
         <View>

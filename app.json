@@ -27,6 +27,7 @@
         "NOTIFICACION",
         "USER_FACING_NOTIFICATIONS"
       ],
+      "useNextNotificationsApi":true,
 
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",

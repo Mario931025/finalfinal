@@ -12,6 +12,17 @@ import uuid from 'random-uuid-v4'
 import {map, result} from 'lodash'
 //para que se conecta la BD
 import { convertirFicheroBlob} from './ValidarEmail'
+import { FireSQL } from 'firesql'
+
+
+
+
+
+const db = firebase.firestore(firebaseapp);
+
+//conecta firessotore con sql
+const fireSQL = new FireSQL(firebase.firestore(), { includeId: "id" });
+//codigo para manejar las notificaciones y personalizarlas
 
 /// codigo para manejar las notificaciones y personalizarlas
 Notifications.setNotificationHandler({
@@ -23,7 +34,6 @@ Notifications.setNotificationHandler({
 })
 
 
-const db = firebase.firestore(firebaseapp);
 
 export const validarsesion = (setvalidarsesion) =>{
 
@@ -297,3 +307,288 @@ export const actualizarTelefono = async (verificationId, code) => {
 
 
 }
+
+//funcion que se encarga de subir los productos a firebase
+
+export const addRegistro = async(coleccion,data) => {
+
+    const resultado = {error: "", statusresponse: false}
+  
+    await db.collection(coleccion)
+    .add(data)
+
+    .then((response)=> {
+      resultado.statusresponse = true;
+    })
+    .catch((err)=>{
+      resultado.error = err;
+    })
+    
+    return resultado;
+  }
+
+//funcion lista los productos en mi tienda 
+//retorna una arreglo de los productos
+
+export const listarMisProductos = async () => {
+
+    let productos = []
+
+    await db
+    .collection("Productos")
+    .where("usuario" , "==", ObtenerUsuario().uid) //campo usuario sea igual al id del usuario
+    .where("status","==",1)
+    .get() //obtiene los datos en este caso de los productos de este usuario 
+    .then((response) => {
+        response.forEach((doc)=> {
+            const producto = doc.data()
+            producto.id = doc.id
+            productos.push(producto)
+        })
+    })
+    .catch((err) => {
+        console.log(err)
+    })
+
+    return productos;
+}
+
+export const actualizarRegistro = async(coleccion,documento,data) => {
+
+    let response = {statusresponse:false}
+
+    await db.collection(coleccion).doc(documento)
+    .update(data)
+    .then(res => response.statusresponse=true)
+    .catch(err => console.log(err))
+
+    return response
+
+}
+
+//funcion que elimina el registro de BD
+
+export const eliminarProducto = async(coleccion,documento) => {
+    let response ={ statusresponse : false}
+
+    await db.collection(coleccion).doc(documento)
+    .delete()
+    .then(result => response.statusresponse = true)
+    .catch(err => console.log(err))
+
+    return response
+}
+
+//funcion que se encarga de obtener el id del producto 
+
+export const obtenerRegistroxID = async(coleccion,documento) => {
+    let response ={ statusresponse : false , data: null}
+
+    await db.collection(coleccion)
+    .doc(documento)
+    .get()
+    .then((result) => {
+        const producto = result.data()
+
+        producto.id = result.id
+        
+        response.data = producto
+        response.statusresponse = true
+
+    })
+
+    .catch((err) => {
+        console.log(err)
+    })
+
+    return response;
+}
+
+//se encarga de mostrar los productos en home,
+//solo va a mostrar los productos activos
+
+export const ListarProductos = async () => {
+
+    const productoList = []
+    let index = 0
+
+    await db.collection("Productos")
+    .where("status","==",1)
+    .get()
+    .then( response => {
+
+        response.forEach((doc) => {
+
+            const producto = doc.data()
+            
+            producto.id = doc.id
+
+            productoList.push(producto)
+
+        })
+
+    })
+    .catch( err => console.log(err))
+
+
+    for(const registro of productoList ){
+        const usuario = await obtenerRegistroxID("Usuarios" , registro.usuario)
+        productoList[index].usuario = usuario.data
+        index ++;
+    }
+
+    return productoList;
+}
+
+
+export const listarproductosxcategoria = async(categoria) => {
+
+    const productoslist = []
+
+    let index = 0;
+
+    await db.collection("Productos")
+    .where("status","==",1)
+    .where("categoria","==",categoria)
+    .get()
+    .then(response => {
+
+        response.forEach((doc) => {
+
+            const producto = doc.data()
+
+            producto.id = doc.id
+            
+            productoslist.push(producto)
+
+        })
+    })
+
+    .catch(err => console.log(err))
+
+    for(const registro of productoslist) {
+
+        const usuario =  await obtenerRegistroxID("Usuarios" , registro.usuario)
+        productoslist[index].usuario =  usuario.data
+
+        index ++;
+
+    }
+
+    return  productoslist;
+
+
+}
+
+
+export const Buscar = async (search) => {
+    let productos = [];
+  
+    await fireSQL
+      .query(`SELECT * FROM Productos WHERE titulo LIKE '${search}%' `)
+      .then((response) => {
+        productos = response;
+      });
+  
+    return productos;
+  };
+
+
+  export const iniciarnotificaciones = (
+    notificationListener,
+    responseListener
+  ) => {
+    notificationListener.current = Notifications.addNotificationReceivedListener(
+      (notification) => {
+        console.log(notification);
+        console.log("me presionaste chido")
+      }
+    );
+  
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        console.log(response);
+      }
+    );
+  
+    return () => {
+      Notifications.removeNotificationSubscription(notificationListener);
+      Notifications.removeNotificationSubscription(responseListener);
+    };
+  };
+  
+
+  export const  sendPushNotification = async(mensaje) => {
+
+    let respuesta = false
+
+  
+    await fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Accept-encoding': 'gzip, deflate',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(mensaje),
+    }).then(response => {
+        respuesta = true;
+    })
+
+    return respuesta;
+  }
+
+  //3nvia mensaje al vendedor para el servidor de exponotifications
+
+  export const setMensajeNotificacion = (token,titulo,body,data) => {
+
+    const message = {
+        to: token,
+        sound: 'default',
+        title: titulo,
+        body: body,
+        data:data ,
+      };
+
+      return message
+
+  }
+
+  //funcion para las notificaciones de la app
+  //receiver es el userid y visto valor 0= no ha visto el mensaje
+  
+  export const ListarNotificaciones = async()=> {
+
+    let respuesta =  { statusresponse: false, data: [] };
+
+    let index = 0
+
+    await db.collection("Notificaciones")
+    .where("receiver","==",ObtenerUsuario().uid )
+    .where("visto","==",0)
+    .get()
+    .then((response) => {
+
+        let datos;
+
+        response.forEach((doc) => {
+            datos = doc.data()
+            datos.id = doc.id
+            respuesta.data.push(datos)
+        })
+
+        respuesta.statusresponse = true
+
+    })
+
+    for(const notificacion of  respuesta.data  ) {
+
+        const usuario = await obtenerRegistroxID("Usuarios",notificacion.sender)
+        respuesta.data[index].sender = usuario.data;
+        index++;
+
+    }
+
+    return respuesta;
+
+  }
